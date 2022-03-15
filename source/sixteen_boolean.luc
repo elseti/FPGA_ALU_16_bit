@@ -1,0 +1,20 @@
+module sixteen_boolean (
+    input alufnsig[4],
+    input a[16],
+    input b[16],
+    output s[16]
+  ) {
+
+  always {
+    case(alufnsig[3:0]){
+      b1000:s=a&b; //AND
+      b1110:s=a|b; //OR
+      b0110:s=a^b; //XOR
+      b1010:s=a; //A
+    default:
+      s=b0000000000000000;
+    }
+    
+    }
+}
+
