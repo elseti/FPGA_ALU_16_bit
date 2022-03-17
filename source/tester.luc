@@ -1,0 +1,272 @@
+module tester (
+    input clk,  // clock
+    input rst,  // reset
+    input lsbInvert,
+    output state[4] //0000 for add, 0001 for mul, and so on...
+
+
+  ) {
+  
+
+  fsm stateList(.clk(clk), .rst(rst)) = {ADD, MUL, BOOL, SHIFT, COMPARE, SUCCESS, ERROR};
+  
+  ///////////////////////////// TEST CASES DECLARATION //////////////////////////////////////
+  ////////////////////////////////// ADD STATE //////////////////////////////////////////
+  //test 1- ADD 
+  const ALUFN1= b000000;
+  const A1= b0000000000001111;//16d15;
+  const B1= b0000000000000011;
+  const C1= b0000000000010010;
+  const Z1= b0;
+  const V1= b0;
+  const N1= b0;
+
+  
+  //test 2- subtract
+  const ALUFN2= b000001;
+  const A2= b0000000000000010; //2
+  const B2= b0000000000110010; //50
+  const C2= b1111111111010000;
+  const Z2= b0;
+  const V2= b0;
+  const N2= b1;
+  
+  //test 0 -adderError (more than 32768) (16384 + 16384)
+  const ALUFN0= b000000;
+  const A0= b010000000000000;
+  const B0= b010000000000000; 
+  const C0= b100000000000000; //this is wrong tho cuz it becomes a -32768
+  
+  ////////////////////////////////////////// MUL STATE ///////////////////////////////////////////
+  const ALUFN3= b000010;
+  const A3= 16d12;
+  const B3= 16d15;
+  const C3= 16d180;
+  
+  ////////////////////////////////////////// BOOL STATE ///////////////////////////////////////////
+  /// AND ///
+  const ALUFN4= b011000;
+  const A4= b0010000000000000;
+  const B4= b0010100000000000;
+  const C4= b0010000000000000;
+  
+  /// OR ///
+  const ALUFN5= b011110;
+  const A5= b0101000000000000;
+  const B5= b0100100000000000;
+  const C5= b0101100000000000;
+  
+  /// XOR ///
+  const ALUFN6= b010110;
+  const A6= b0101101000000000;
+  const B6= b1011101100000000;
+  const C6= b1110000100000000;
+  
+  /// A ///
+  const ALUFN7= b011010;
+  const A7= b1011010110000000;
+  const B7= b1010010010101000; //whtever
+  const C7= b1011010110000000;
+  
+  
+  
+  
+  ////////////////////////////////////////// SHIFT //////////////////////////////////////
+  /// SHL ///
+  const ALUFN8= b100000;
+  const A8= b0110010000000000;
+  const B8= b0000000000000010;
+  const C8= b1001000000000000;
+  
+  /// SHR ///
+  const ALUFN9= b100001;
+  const A9= b1101000000000000;
+  const B9= b0000000000000101;
+  const C9= b0000011010000000;
+  
+  /// SRA ///
+  const ALUFN10= b100011;
+  const A10= b1110100000000000;
+  const B10= b0000000000000011;
+  const C10= b1111110100000000;
+  
+  /////////////////////////////////////// COMPARE //////////////////////////////////////
+  /// CMPEQ ///
+  const ALUFN11= b110011;
+  const A11= b0000000000001111;
+  const B11= b0000000000001111;
+  const C11= b0000000000000001;
+  
+  /// CMPLT ///
+  const ALUFN12= b110101;
+  const A12= b0000000000011001;
+  const B12= b0000000000011001;
+  const C12= b0000000000000000;
+  
+  
+  /// CMPLE ///
+  const ALUFN13= b110111;
+  const A13= b0000000000110111;
+  const B13= b0000000000110111;
+  const C13= b0000000000000001;
+    
+  
+  
+  
+  
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////// DECLARE MODULES ///////////////////////////////////////
+  
+  sixteen_bit_adder adder;
+  sixteen_bit_adder adder2;
+  
+  multiplier multi;
+  sixteen_boolean boolAND;
+  sixteen_boolean boolOR;
+  sixteen_boolean boolXOR;
+  sixteen_boolean boolA;
+  shifter shiftSHL;
+  shifter shiftSHR;
+  shifter shiftSRA;
+  
+  sixteen_bit_adder adderCMPEQ;
+  sixteen_bit_adder adderCMPLT;
+  sixteen_bit_adder adderCMPLE;
+  comparator compCMPEQ;
+  comparator compCMPLT;
+  comparator compCMPLE;
+  
+  
+  always {
+  
+    //// ASSIGNMENT ////
+    adder.x= A1;
+    adder.y= B1;
+    adder.cin= ALUFN1[0];
+    
+    adder2.x= A2;
+    adder2.y= B2;
+    adder2.cin= ALUFN2[0];
+    
+    multi.a= A3;
+    multi.b= B3;
+    
+    boolAND.a= A4;
+    boolAND.b= B4;
+    boolAND.alufnsig= ALUFN4[3:0];
+    
+    boolOR.a= A5;
+    boolOR.b= B5;
+    boolOR.alufnsig= ALUFN5[3:0];
+    
+    boolXOR.a= A6;
+    boolXOR.b= B6;
+    boolXOR.alufnsig= ALUFN6[3:0];
+    
+    boolA.a= A7;
+    boolA.b= B7;
+    boolA.alufnsig= ALUFN7[3:0];
+    
+    shiftSHL.a= A8;
+    shiftSHL.b= B8;
+    shiftSHL.alufn= ALUFN8[1:0];
+    
+    shiftSHR.a= A9; 
+    shiftSHR.b= B9;
+    shiftSHR.alufn= ALUFN9[1:0];
+    
+    shiftSRA.a= A10;
+    shiftSRA.b= B10;
+    shiftSRA.alufn= ALUFN10[1:0];
+    
+    adderCMPEQ.x= A11;
+    adderCMPEQ.y= B11;
+    adderCMPEQ.cin= b1; //always 1 because subtract
+    compCMPEQ.z= adderCMPEQ.z;
+    compCMPEQ.v= adderCMPEQ.v;
+    compCMPEQ.n= adderCMPEQ.n;
+    compCMPEQ.alufn= ALUFN11[2:1];
+    
+    adderCMPLT.x= A12;
+    adderCMPLT.y= B12;
+    adderCMPLT.cin= b1;
+    compCMPLT.z= adderCMPLT.z;
+    compCMPLT.v= adderCMPLT.v;
+    compCMPLT.n= adderCMPLT.n;
+    compCMPLT.alufn= ALUFN12[2:1];
+    
+    adderCMPLE.x= A13;
+    adderCMPLE.y= B13;
+    adderCMPLE.cin= b1;
+    compCMPLE.z= adderCMPLE.z;
+    compCMPLE.v= adderCMPLE.v;
+    compCMPLE.n= adderCMPLE.n;
+    compCMPLE.alufn= ALUFN13[2:1];
+    
+    //error case simulation when the last significant bit is always zero
+    if(lsbInvert==b1){
+      adder.x[0]= b0;
+      adder2.x[0]= b0;
+      multi.a[0]= b0;
+      //and more
+    }
+    
+    
+    
+    case(stateList.q){
+    
+      //ADD state, if pass, goes to MUL state
+      stateList.ADD:
+        state= b0001;        
+        if(adder.s == C1 && adder.z== Z1 && adder.v==V1 && adder.n==N1 && adder2.s==C2 && adder2.z==Z2 && adder2.v==V2 && adder2.n==N2){
+          stateList.d= stateList.MUL;
+        }
+        else{
+          stateList.d= stateList.ERROR;
+        }
+      
+      //MUL state, if pass goes to BOOL state
+      stateList.MUL:
+        //test= b10;
+        state=b0010;
+        if(multi.out==C3){stateList.d=stateList.BOOL;}
+        else{stateList.d=stateList.ERROR;}
+      
+      //BOOL state, if pass goes to SHIFT state
+      stateList.BOOL:
+        state= b0011;
+        //alrd defined previously
+        if(boolAND.s==C4 && boolOR.s==C5 && boolXOR.s==C6 && boolA.s==C7){stateList.d=stateList.SHIFT;}
+        else{stateList.d=stateList.ERROR;}
+      
+      //SHIFT state, if pass goes to COMPARE state
+      stateList.SHIFT:
+        state= b0100;
+        if(shiftSHL.out==C8 && shiftSHR.out==C9 && shiftSRA.out==C10){stateList.d=stateList.COMPARE;}
+        else{stateList.d=stateList.ERROR;}
+      
+      //COMPARE state, if pass goes to SUCCESS state
+      stateList.COMPARE:
+        state= b0101;
+        if(compCMPEQ.lastSum==C11 && compCMPLT.lastSum==C12 && compCMPLE.lastSum==C13){stateList.d=stateList.SUCCESS;}
+        else{stateList.d=stateList.ERROR;}
+      
+     //SUCCESS state.
+      stateList.SUCCESS:
+        state= b0110;
+     
+     //ERROR state   
+      stateList.ERROR:
+        state=b1111; 
+      
+      //default state 0000  
+      default:
+        stateList.d= stateList.ADD;
+        state= b0000;
+    }
+    
+    
+   
+    
+  }
+}
