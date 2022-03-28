@@ -1,0 +1,54 @@
+module sixteen_bit_adder (
+    input x[16],
+    input y[16],
+    input cin, //carry in here is ALUFN; 6 bits, but we assume we only pass 1 bit
+    output s[16],
+    output error[4],
+    output z,
+    output v,
+    output n
+  ){
+  
+  sig lastSum;
+  sig sum[16];
+
+  always {
+    error=b0000;
+    
+    case(cin){
+      b0: 
+        s= x+y;
+        sum= x+y;
+      b1: 
+        s= x-y;
+        sum= x-y;
+      default:
+        s= 16b0;
+        sum= 16b0;
+    }
+
+    //shows error if positive overflow
+    if(x>=b0100000000000000 && y>=b0100000000000000 && cin==b0){
+      error= b1111;
+      s=16b0;
+    }
+    
+    //shows error if negative overflow
+    if(((x>b1100000000000000 && y>=b1100000000000000) | (x>=b1100000000000000 && y>b1100000000000000)) && cin==b1){
+      error= b1111;
+      s=16b0;
+    }
+    
+    lastSum= sum[15];
+    
+    //Z unit 
+    z = ~|(sum[7:0] || sum[15:8]); //NOR 32
+    
+    //V unit
+    v= x[15] & (y[15]^cin) & ~lastSum | ~x[15] & ~(y[15]^cin) & lastSum;
+    
+    //N unit
+    n= sum[15];
+    
+  }
+}

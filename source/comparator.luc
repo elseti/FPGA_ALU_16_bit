@@ -1,0 +1,20 @@
+module comparator (
+    input alufn[2],
+    input z,
+    input n,
+    input v,
+    output lastSum[16]
+  ) {
+
+  always {
+    lastSum[15:1] = 0; 
+    case(alufn[1:0]){
+      b01: lastSum[0]= z; //A=B
+      b10: lastSum[0]= n^v; //A<B
+      b11: lastSum[0]= z | (n^v); //A<=B
+      default:
+        lastSum[0]=0;
+    
+    }
+  }
+}

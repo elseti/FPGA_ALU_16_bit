@@ -1,0 +1,189 @@
+module alu (
+    input alufn[6],
+    input a[16],
+    input b[16],
+    output res[16],
+    output z,
+    output v,
+    output n
+  ) {
+
+  
+  sixteen_bit_adder sixteenFA;
+  sixteen_boolean sixteenBoolean;
+  comparator comp;
+  shifter shift;
+  multiplier mult;
+  
+  always {
+     
+    //some necessary declarations
+    sixteenFA.x= 16b0;
+    sixteenFA.y= 16b0;
+    sixteenFA.cin= alufn[0];
+
+    sixteenBoolean.a= 16b0;
+    sixteenBoolean.b=16b0;
+    sixteenBoolean.alufnsig=alufn[3:0];
+
+    comp.alufn= alufn[2:1];
+    comp.z= sixteenFA.z;
+    comp.v= sixteenFA.v;
+    comp.n= sixteenFA.n;
+    
+    shift.a= 16b0;
+    shift.b= 16b0;
+    shift.alufn[1:0]= alufn[1:0];
+    
+    mult.a= 16b0;
+    mult.b= 16b0;
+ 
+    
+    case(alufn[5:0]){
+      b000000:  //add
+        sixteenFA.x=a;
+        sixteenFA.y= b;
+        sixteenFA.cin= b0;
+        
+        res= sixteenFA.s;
+        z= sixteenFA.z;
+        v= sixteenFA.v;
+        n= sixteenFA.n;
+        
+      b000001: //subtract
+        sixteenFA.x=a;
+        sixteenFA.y= b;
+        sixteenFA.cin= b1;
+        
+        res= sixteenFA.s;
+        z= sixteenFA.z;
+        v= sixteenFA.v;
+        n= sixteenFA.n;
+      
+      b000010: //multiply
+        mult.a= a;
+        mult.b= b;
+        res= mult.out;
+        z=b0;
+        v=b0;
+        n=b0;
+        
+      b011000: //AND
+        sixteenBoolean.a= a;
+        sixteenBoolean.b= b;
+        sixteenBoolean.alufnsig= alufn[3:0];
+        res= sixteenBoolean.s;
+        z=b0;
+        v=b0;
+        n=b0;
+      
+      b011110: //OR
+        sixteenBoolean.a= a;
+        sixteenBoolean.b= b;
+        sixteenBoolean.alufnsig= alufn[3:0];
+        res= sixteenBoolean.s;
+        z=b0;
+        v=b0;
+        n=b0;
+      
+      b010110: //XOR
+        sixteenBoolean.a= a;
+        sixteenBoolean.b= b;
+        sixteenBoolean.alufnsig= alufn[3:0];
+        res= sixteenBoolean.s;
+        z=b0;
+        v=b0;
+        n=b0;
+        
+      b011010: //A
+        sixteenBoolean.a= a;
+        sixteenBoolean.b= b;
+        sixteenBoolean.alufnsig= alufn[3:0];
+        res= sixteenBoolean.s;
+        z=b0;
+        v=b0;
+        n=b0;
+      
+      b100000: //SHL
+        shift.a= a;
+        shift.b= b;
+        shift.alufn= alufn[1:0];
+        res= shift.out;
+        z=b0;
+        v=b0;
+        n=b0;
+        
+      b100001: //SHR
+        shift.a= a;
+        shift.b= b;
+        shift.alufn= alufn[1:0];
+        res= shift.out;
+        z=b0;
+        v=b0;
+        n=b0;
+     
+      b100011: //SRA
+        shift.a= a;
+        shift.b= b;
+        shift.alufn= alufn[1:0];
+        res= shift.out;
+        z=b0;
+        v=b0;
+        n=b0;
+      
+      b110011: //CMPEQ
+        sixteenFA.x= a;
+        sixteenFA.y= b;
+        sixteenFA.cin= alufn[0];
+
+        comp.alufn= alufn[2:1];
+        comp.z= sixteenFA.z;
+        comp.v= sixteenFA.v;
+        comp.n= sixteenFA.n;
+        res[15:1]= 15b0;
+        res= comp.lastSum;
+        z=b0;
+        v=b0;
+        n=b0;
+        
+      b110101: //CMPLT
+        sixteenFA.x= a;
+        sixteenFA.y= b;
+        sixteenFA.cin= alufn[0];
+
+        comp.alufn= alufn[2:1];
+        comp.z= sixteenFA.z;
+        comp.v= sixteenFA.v;
+        comp.n= sixteenFA.n;
+        res[15:1]= 15b0;
+        res= comp.lastSum;
+        z=b0;
+        v=b0;
+        n=b0;
+        
+      b110111: //CMPLE
+        sixteenFA.x= a;
+        sixteenFA.y= b;
+        sixteenFA.cin= alufn[0];
+
+        comp.alufn= alufn[2:1];
+        comp.z= sixteenFA.z;
+        comp.v= sixteenFA.v;
+        comp.n= sixteenFA.n;
+        res[15:1]= 15b0;
+        res= comp.lastSum;
+        z=b0;
+        v=b0;
+        n=b0;
+        
+      default:
+        res= 16b0;
+        z= b0;
+        v= b0;
+        n= b0;
+    }
+    
+    
+    
+  }
+}
